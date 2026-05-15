@@ -1,0 +1,920 @@
+{
+  "name": "Retention Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\nconst lastVisit = new Date(input.last_visit_date);\nconst now = new Date();\nconst diffTime = now - lastVisit;\nconst diffDays = diffTime / (1000 * 60 * 60 * 24);\nconst inactiveMonths = diffDays / 30;\n\nreturn [\n  {\n    json: {\n      ...input,\n      inactive_months: Number(inactiveMonths.toFixed(1)),\n      is_inactive_6_plus_months: inactiveMonths >= 6\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "ea5dcb3c-749d-4d8b-ba78-f493d91a0c33",
+      "name": "Check Inactive 6+ Months"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\nconst toBool = (v) => {\n  if (typeof v === 'boolean') return v;\n  if (typeof v === 'string') return v.toLowerCase() === 'true';\n  return Boolean(v);\n};\n\nconst toNum = (v) => {\n  if (typeof v === 'number') return v;\n  const n = Number(v);\n  return Number.isNaN(n) ? 0 : n;\n};\n\nreturn [\n  {\n    json: {\n      ...input,\n      has_messaging_consent: toBool(input.has_messaging_consent),\n      unresolved_clinical_issue: toBool(input.unresolved_clinical_issue),\n      unresolved_billing_issue: toBool(input.unresolved_billing_issue),\n      contacts_this_month: toNum(input.contacts_this_month),\n      chronic_conditions_count: toNum(input.chronic_conditions_count),\n      total_visits: toNum(input.total_visits)\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        0
+      ],
+      "id": "ae2a7871-7018-4abc-8d40-c1a9029f8afe",
+      "name": "Normalize Retention Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "5abb1761-3250-4e09-ae1e-d19fd95f4fb8",
+              "leftValue": "={{$json.is_inactive_6_plus_months}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "7de4728b-9d52-4248-adb7-a2fc509cc1f1",
+      "name": "IF Inactive 6+ Months"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4e08e06b-de47-4436-ad7a-9d91e26e8b4f",
+              "name": "retention_status",
+              "value": "not_eligible",
+              "type": "string"
+            },
+            {
+              "id": "7b75bf67-adde-4384-b646-820347c76044",
+              "name": "reason",
+              "value": "patient active within last 6 months",
+              "type": "string"
+            },
+            {
+              "id": "8d9e0000-1ed6-406a-822d-0c36066bffee",
+              "name": "outreach_allowed",
+              "value": "false",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1248,
+        96
+      ],
+      "id": "a36513b7-8a8b-4afc-b61a-4870d2888c2f",
+      "name": "Not Eligible - Recently Active"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8d04badb-6343-4e80-95e7-409614d6efac",
+              "leftValue": "={{$json.has_messaging_consent}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1248,
+        -96
+      ],
+      "id": "f1268887-fa68-4c65-b8c0-532d5f7a280c",
+      "name": "IF Messaging Consent Exists"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "26c25e12-3598-409f-bd5a-7f63f2cda449",
+              "name": "retention_status",
+              "value": "blocked",
+              "type": "string"
+            },
+            {
+              "id": "34d1f028-850f-4b35-a18a-161bdfa69c4c",
+              "name": "reason",
+              "value": "no messaging consent",
+              "type": "string"
+            },
+            {
+              "id": "69bc3b18-eb20-4032-88da-9c981533f9d7",
+              "name": "outreach_allowed",
+              "value": "false",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1456,
+        0
+      ],
+      "id": "57780278-f93e-445a-a016-723abc5511fe",
+      "name": "Blocked - No Consent"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ce792edf-6762-4450-868b-5a51e67c50ab",
+              "leftValue": "={{$json.unresolved_clinical_issue}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "29d8db87-a11f-447b-a066-4fe1a9de9d19",
+              "leftValue": "={{$json.unresolved_billing_issue}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1456,
+        -192
+      ],
+      "id": "e8355751-c1fa-4980-937a-522c4a5c6531",
+      "name": "IF Suppression Needed"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "287bcb16-f59b-48f4-9fad-da6bd87d6a0f",
+              "name": "retention_status",
+              "value": "suppressed",
+              "type": "string"
+            },
+            {
+              "id": "af57fe68-9377-4abc-be3e-807bd672f3f5",
+              "name": "reason",
+              "value": "unresolved clinical or billing issue",
+              "type": "string"
+            },
+            {
+              "id": "a7116c72-a655-4090-a7dd-176000ceb0de",
+              "name": "outreach_allowed",
+              "value": "false",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1664,
+        -288
+      ],
+      "id": "677ea8e8-9876-4a76-9351-290c83702c5e",
+      "name": "Blocked - Suppression List"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ee22056b-ea86-463e-a70a-d2dea40a0529",
+              "leftValue": "={{$json.contacts_this_month}}",
+              "rightValue": 2,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1664,
+        -96
+      ],
+      "id": "e6637a61-70aa-4f0f-af85-f2c59fec15c8",
+      "name": "IF Frequency Cap Reached"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "471a6193-1b16-45f7-8fc3-edb925d6a45b",
+              "name": "retention_status",
+              "value": "blocked",
+              "type": "string"
+            },
+            {
+              "id": "da27f36b-ef9e-46ab-bad4-b054c1583c32",
+              "name": "reason",
+              "value": "monthly contact cap reached",
+              "type": "string"
+            },
+            {
+              "id": "198afcec-82fb-49a2-a466-1b21f1336597",
+              "name": "outreach_allowed",
+              "value": "false",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1872,
+        -192
+      ],
+      "id": "be439166-6551-45f6-a49e-1d89e5eab175",
+      "name": "Blocked - Frequency Cap"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\nlet segment = 'one-time';\n\nif (input.chronic_conditions_count >= 1) {\n  segment = 'chronic';\n} else if (input.total_visits >= 2) {\n  segment = 'wellness';\n}\n\nreturn [\n  {\n    json: {\n      ...input,\n      patient_segment: segment\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1872,
+        0
+      ],
+      "id": "69f07681-8a1a-4439-85c3-be5e53572d24",
+      "name": "Classify Patient Segment"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\n\nlet message = '';\n\nif (input.patient_segment === 'chronic') {\n  message = `Hi ${input.patient_id}, it’s time for your follow-up care review. We noticed you haven’t visited in a while. Please book your next appointment if you'd like continued support for your ongoing condition management.`;\n} else if (input.patient_segment === 'wellness') {\n  message = `Hi ${input.patient_id}, we haven’t seen you in a while. If you’d like, you can schedule your next wellness visit or routine check-up with the clinic.`;\n} else {\n  message = `Hi ${input.patient_id}, we noticed it has been some time since your last visit. If you need anything, you’re welcome to book an appointment with the clinic.`;\n}\n\nreturn [\n  {\n    json: {\n      ...input,\n      outreach_allowed: true,\n      retention_status: 'ready_to_send',\n      outreach_message: message\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        0
+      ],
+      "id": "35420d75-38f6-45aa-8955-f648f447cd96",
+      "name": "Build Retention Message"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "273b8da6-dc66-4b8b-b68c-9eb5f80f9cbe",
+              "name": "",
+              "value": "={{$json.patient_id}}",
+              "type": "string"
+            },
+            {
+              "id": "1d7fd27e-c0e9-4a22-8fc8-dfd8fdac92d3",
+              "name": "inactive_months",
+              "value": "={{$json.inactive_months}}",
+              "type": "string"
+            },
+            {
+              "id": "6a9d87ed-6e9b-4c89-889e-76833ca6ce8b",
+              "name": "patient_segment",
+              "value": "={{$json.patient_segment}}",
+              "type": "string"
+            },
+            {
+              "id": "42fbb677-8524-4e21-bfb0-bb6312c43393",
+              "name": "retention_status",
+              "value": "={{$json.retention_status}}",
+              "type": "string"
+            },
+            {
+              "id": "233c8e17-4fa6-4c08-8003-de8ac78b0b4f",
+              "name": "outreach_allowed",
+              "value": "={{$json.outreach_allowed}}",
+              "type": "string"
+            },
+            {
+              "id": "bc4333d9-c740-4360-8c29-7bffcd95ad58",
+              "name": "reason",
+              "value": "eligible for retention outreach",
+              "type": "string"
+            },
+            {
+              "id": "1da70a6b-98e6-48cd-b50d-82b0a84ad055",
+              "name": "outreach_message",
+              "value": "={{$json.outreach_message}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2288,
+        0
+      ],
+      "id": "fb7defb5-08b4-4ae9-a176-86d87cb701a4",
+      "name": "Retention Decision Output"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d1fd1331-fc5a-4c14-9210-89c4f4a8a999",
+              "name": "patient_id",
+              "value": "={{$json.patient_id}}",
+              "type": "string"
+            },
+            {
+              "id": "fafe5251-e1ef-47fe-a76c-4ad9c34be613",
+              "name": "retention_status",
+              "value": "={{$json.retention_status}}",
+              "type": "string"
+            },
+            {
+              "id": "57f14d63-e9e4-4afd-bf66-c9a07976f0a2",
+              "name": "outreach_allowed",
+              "value": "={{$json.outreach_allowed}}",
+              "type": "string"
+            },
+            {
+              "id": "2489238d-3064-4710-9631-a5eaa578fa00",
+              "name": "reason",
+              "value": "={{$json.reason}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1408,
+        176
+      ],
+      "id": "6c086afa-5678-4656-b549-81f41c40ddf3",
+      "name": "Output - Not Eligible"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e7774d60-3625-4bfd-b73e-3de0ecd1fbcd",
+              "name": "patient_id",
+              "value": "={{$json.patient_id}}",
+              "type": "string"
+            },
+            {
+              "id": "16b9b357-0e7c-4c8a-81dc-7c7521ee8ca1",
+              "name": "retention_status",
+              "value": "={{$json.retention_status}}",
+              "type": "string"
+            },
+            {
+              "id": "b6ec8571-47b8-4274-bb0f-a19aac3890e0",
+              "name": "outreach_allowed",
+              "value": "={{$json.outreach_allowed}}",
+              "type": "string"
+            },
+            {
+              "id": "e3aa6a13-6a3d-4302-99eb-8d3502462b4b",
+              "name": "reason",
+              "value": "={{$json.reason}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1616,
+        112
+      ],
+      "id": "c47f566e-1e45-4a8c-b096-748db566520f",
+      "name": "Output - No Consent"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "de66cb36-5427-443b-972f-771d9c9dbd42",
+              "name": "patient_id",
+              "value": "={{$json.patient_id}}",
+              "type": "string"
+            },
+            {
+              "id": "698b819c-c1e3-478b-8cd0-f39b1fc8be3f",
+              "name": "retention_status",
+              "value": "={{$json.retention_status}}",
+              "type": "string"
+            },
+            {
+              "id": "4c49b544-1253-44e5-958f-61ea98a8baf9",
+              "name": "outreach_allowed",
+              "value": "={{$json.outreach_allowed}}",
+              "type": "string"
+            },
+            {
+              "id": "c3b0887c-e2ac-4e94-b16a-14bdd773c1a5",
+              "name": "reason",
+              "value": "={{$json.reason}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1856,
+        -336
+      ],
+      "id": "4d4d0dec-e285-4e9b-94c3-08c96dec7aeb",
+      "name": "Output - Suppressed"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5fc9bd4e-25f2-4c16-ade0-f28073f52cc2",
+              "name": "patient_id",
+              "value": "={{$json.patient_id}}",
+              "type": "string"
+            },
+            {
+              "id": "9fc37cc1-4960-42f8-bc33-7d469a262c67",
+              "name": "retention_status",
+              "value": "={{$json.retention_status}}",
+              "type": "string"
+            },
+            {
+              "id": "86fa5cd0-2279-452b-ac66-b1c5e5ea6640",
+              "name": "outreach_allowed",
+              "value": "={{$json.outreach_allowed}}",
+              "type": "string"
+            },
+            {
+              "id": "a5a8980a-a233-490c-bc21-3144a2b98395",
+              "name": "reason",
+              "value": "={{$json.reason}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2080,
+        -192
+      ],
+      "id": "b8385f78-fe08-4270-9b3e-bac5b10ffe1e",
+      "name": "Output - Frequency Cap"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c148ae77-18b9-4ed5-8b8b-4af38709ddf2",
+              "name": "patient_id",
+              "value": "={{$json.patient_id}}",
+              "type": "string"
+            },
+            {
+              "id": "48f9af11-b779-4ab9-a8c7-2d4e56614bf4",
+              "name": "last_visit_date",
+              "value": "={{$json.payload.last_visit_date}}",
+              "type": "string"
+            },
+            {
+              "id": "1d2bdf8b-5ccd-4e6a-b12b-55bb53480bae",
+              "name": "segment_hint",
+              "value": "={{$json.payload.segment_hint}}",
+              "type": "string"
+            },
+            {
+              "id": "338e0bcf-a500-451c-99a1-07958577cca8",
+              "name": "has_messaging_consent",
+              "value": "={{$json.payload.has_messaging_consent}}",
+              "type": "string"
+            },
+            {
+              "id": "df1f639d-2915-4e83-b4ec-e3698e661e79",
+              "name": "unresolved_clinical_issue",
+              "value": "={{$json.payload.unresolved_clinical_issue}}",
+              "type": "string"
+            },
+            {
+              "id": "fccfa551-4270-4bf2-816c-7bd24eeb19a4",
+              "name": "unresolved_billing_issue",
+              "value": "={{$json.payload.unresolved_billing_issue}}",
+              "type": "string"
+            },
+            {
+              "id": "896ab21b-3d3c-435b-ae5a-06e12b36c0e7",
+              "name": "contacts_this_month",
+              "value": "={{$json.payload.contacts_this_month}}",
+              "type": "string"
+            },
+            {
+              "id": "0b49127b-4b98-4eaa-b913-59692a5840d4",
+              "name": "chronic_conditions_count",
+              "value": "={{$json.payload.chronic_conditions_count}}",
+              "type": "string"
+            },
+            {
+              "id": "3f94bbc6-640c-4f6d-9910-40eb0a9bb1f7",
+              "name": "total_visits",
+              "value": "={{$json.payload.total_visits}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        416,
+        0
+      ],
+      "id": "dcf732b2-6441-4a95-a3dc-a93bee6b4f46",
+      "name": "Normalize Incoming Retention Input"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "retention-agent",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        192,
+        0
+      ],
+      "id": "0e2b07e4-ddfd-482a-810f-7878780ea8eb",
+      "name": "Webhook",
+      "webhookId": "49a2e91f-3024-4107-b327-2c8eb3371270"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2464,
+        -160
+      ],
+      "id": "4f3f8801-dca8-4e57-8467-904546fa2e31",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Check Inactive 6+ Months": {
+      "main": [
+        [
+          {
+            "node": "Normalize Retention Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Retention Fields": {
+      "main": [
+        [
+          {
+            "node": "IF Inactive 6+ Months",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Inactive 6+ Months": {
+      "main": [
+        [
+          {
+            "node": "IF Messaging Consent Exists",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Not Eligible - Recently Active",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Messaging Consent Exists": {
+      "main": [
+        [
+          {
+            "node": "IF Suppression Needed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Blocked - No Consent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Suppression Needed": {
+      "main": [
+        [
+          {
+            "node": "Blocked - Suppression List",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "IF Frequency Cap Reached",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Frequency Cap Reached": {
+      "main": [
+        [
+          {
+            "node": "Blocked - Frequency Cap",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Classify Patient Segment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Patient Segment": {
+      "main": [
+        [
+          {
+            "node": "Build Retention Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Retention Message": {
+      "main": [
+        [
+          {
+            "node": "Retention Decision Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Not Eligible - Recently Active": {
+      "main": [
+        [
+          {
+            "node": "Output - Not Eligible",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Blocked - No Consent": {
+      "main": [
+        [
+          {
+            "node": "Output - No Consent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Blocked - Suppression List": {
+      "main": [
+        [
+          {
+            "node": "Output - Suppressed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Blocked - Frequency Cap": {
+      "main": [
+        [
+          {
+            "node": "Output - Frequency Cap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Incoming Retention Input": {
+      "main": [
+        [
+          {
+            "node": "Check Inactive 6+ Months",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Incoming Retention Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retention Decision Output": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Output - Frequency Cap": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Output - Suppressed": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Output - No Consent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Output - Not Eligible": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "64b79906-b8f3-46c3-91fd-deb616031648",
+  "meta": {
+    "instanceId": "c89ff2040bd44e47c0b8b87e30d8789dd04832e62528d6e0abbfb2d5db95a336"
+  },
+  "id": "MQQMOKq2Oy73WcgB",
+  "tags": []
+}

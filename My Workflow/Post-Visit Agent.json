@@ -1,0 +1,691 @@
+{
+  "name": "Post-Visit Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "postvisit-checkin",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e4a09430-b5c8-4707-b33f-c8cb7c7d1965",
+      "name": "Webhook",
+      "webhookId": "a7a46d0f-2c36-45f5-9246-74a1088a7fe3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0e6ba836-87fa-4a8b-9911-9ea0a4dcaaf9",
+              "name": "checkin_id",
+              "value": "={{$json[\"body\"][\"checkin_id\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "b1d36a77-b434-42f1-b9c1-81ee971fcb60",
+              "name": "submitted_at",
+              "value": "={{$json[\"body\"][\"submitted_at\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "d248b67d-73ec-454f-85d4-878d0b54b037",
+              "name": "patient_id",
+              "value": "={{$json[\"body\"][\"patient\"][\"patient_id\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "c2eadab8-cb35-4c28-b503-3d6cfc46a05b",
+              "name": "full_name",
+              "value": "={{$json[\"body\"][\"patient\"][\"full_name\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "3dc413ae-b399-4aa2-890e-2b4ae1045f0b",
+              "name": "visit_id",
+              "value": "={{$json[\"body\"][\"visit\"][\"visit_id\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "c716f569-13a1-435b-b5b1-3250f0af0ddc",
+              "name": "appointment_date",
+              "value": "={{$json[\"body\"][\"visit\"][\"appointment_date\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "0d442417-b930-4d56-a896-e28151616f5d",
+              "name": "pain_score",
+              "value": "={{$json[\"body\"][\"checkin\"][\"pain_score\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "b07e1797-374f-41d2-abd1-09625de26027",
+              "name": "symptom_text",
+              "value": "={{$json[\"body\"][\"checkin\"][\"symptom_text\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "ca32d028-eba1-4550-9d29-428e14547cf0",
+              "name": "temperature_c",
+              "value": "={{$json[\"body\"][\"checkin\"][\"temperature_c\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "55ddb8b4-2a72-41f4-ab80-9062d86f47f5",
+              "name": "medications",
+              "value": "={{$json[\"body\"][\"checkin\"][\"medications\"]}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "b5341d00-2de3-420e-ad98-f7f9c31769b5",
+      "name": "Normalize Post-Visit Request"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4cdb45f9-ea55-47b0-9f73-9cfd56221880",
+              "leftValue": "={{\n!$json.checkin_id ||\n!$json.patient_id ||\n!$json.visit_id ||\n!$json.pain_score ||\n!$json.symptom_text\n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "0a22f309-cb36-4141-a796-9036f59aab75",
+      "name": "Check Missing Required Check-In Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0a47ade2-5e35-4859-8d82-26594e318921",
+              "name": "status",
+              "value": "incomplete",
+              "type": "string"
+            },
+            {
+              "id": "6ba27046-2996-4aa6-87d5-5e47d907c32e",
+              "name": "error_type",
+              "value": "missing_required_checkin_fields",
+              "type": "string"
+            },
+            {
+              "id": "ca67544b-9694-4c6c-a814-40c633a585a0",
+              "name": "message",
+              "value": "Missing required post-visit check-in information.",
+              "type": "string"
+            },
+            {
+              "id": "9b0f8922-78cf-48e1-b80a-e684ef9faeeb",
+              "name": "checkin_id",
+              "value": "={{$json.checkin_id}}",
+              "type": "string"
+            },
+            {
+              "id": "be06b7e4-2d90-4698-a40e-5a34660d4b28",
+              "name": "patient_id",
+              "value": "={{$json.patient_id}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        624,
+        -96
+      ],
+      "id": "2e820287-4e87-4a4b-b8cc-5b19f4ff9ac6",
+      "name": "Build Missing Check-In Error"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e1f8a4a3-0b05-4bc1-bdc1-785fc7e51c71",
+              "leftValue": "={{\nNumber($json.pain_score) >= 8\n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        624,
+        96
+      ],
+      "id": "0f616b00-534f-4516-b7e4-a6a87d7be24c",
+      "name": "Check High Pain Score"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "33554d57-be82-4f9d-aa78-690a4053db8b",
+              "name": "status",
+              "value": "escalated",
+              "type": "string"
+            },
+            {
+              "id": "60fe922d-2dc7-4b55-beab-11b5ed48b4b9",
+              "name": "risk_level",
+              "value": "high",
+              "type": "string"
+            },
+            {
+              "id": "a52683d3-5980-4428-a1e6-def46c32c892",
+              "name": "alert_type",
+              "value": "high_pain_score",
+              "type": "string"
+            },
+            {
+              "id": "680f2cd1-b3dd-4ab5-b938-aed1e0999425",
+              "name": "escalation_target",
+              "value": "clinical_team",
+              "type": "string"
+            },
+            {
+              "id": "445e9cc9-59e5-4ce6-8295-c1ed6d85bd1b",
+              "name": "message",
+              "value": "High pain score detected during post-visit check-in.",
+              "type": "string"
+            },
+            {
+              "id": "6a97a597-6f7f-42ca-93f6-137cf598b3e0",
+              "name": "checkin_id",
+              "value": "={{$json.checkin_id}}",
+              "type": "string"
+            },
+            {
+              "id": "6ca84824-53b2-45c8-a682-f231c4889547",
+              "name": "patient_id",
+              "value": "={{$json.patient_id}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        832,
+        0
+      ],
+      "id": "3b303d20-a3f1-473b-940c-af32d8781601",
+      "name": "Build High Pain Escalation"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6c92f38a-1a5f-4c39-a06e-4bdb0da5c79d",
+              "name": "status",
+              "value": "logged",
+              "type": "string"
+            },
+            {
+              "id": "edca6c47-d2f2-4bce-8beb-8db69c7d14ba",
+              "name": "risk_level",
+              "value": "low",
+              "type": "string"
+            },
+            {
+              "id": "049ff52f-07de-4ebf-ae4a-1b13d65a3edd",
+              "name": "message",
+              "value": "Post-visit check-in logged. No immediate red flags detected.",
+              "type": "string"
+            },
+            {
+              "id": "ab8b0234-e6fc-4818-9168-ea777e5f44f0",
+              "name": "next_action",
+              "value": "schedule_next_follow_up",
+              "type": "string"
+            },
+            {
+              "id": "c8d8c087-01f8-4704-b2f4-7f548ddbff42",
+              "name": "checkin_id",
+              "value": "={{$json.checkin_id}}",
+              "type": "string"
+            },
+            {
+              "id": "5ec308ef-4424-42b7-ad01-13b5468bf835",
+              "name": "patient_id",
+              "value": "={{$json.patient_id}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1232,
+        384
+      ],
+      "id": "aa7f6f9f-46d4-4a4b-b4b8-37d33176f3f4",
+      "name": "Build Normal Recovery Logged"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "327b59f4-cc84-4be2-8b8f-8737b5ed430a",
+              "leftValue": "={{\n(() => {\n  const text = String($json.symptom_text || '').toLowerCase();\n\n  const hasBreathingEmergency =\n    text.includes(\"can't breathe\") ||\n    text.includes(\"cannot breathe\") ||\n    text.includes(\"can't breathe properly\") ||\n    text.includes(\"difficulty breathing\") ||\n    text.includes(\"shortness of breath\");\n\n  return hasBreathingEmergency;\n})()\n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        832,
+        192
+      ],
+      "id": "ad06137b-25a5-4a7b-bcd5-24508735373b",
+      "name": "Check Emergency Red Flags"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2367d1b8-1d1e-4c54-9d85-f2b9b21d787e",
+              "name": "status",
+              "value": "escalated",
+              "type": "string"
+            },
+            {
+              "id": "b657e843-07d2-4e83-a2a4-e6a7e249bae7",
+              "name": "risk_level",
+              "value": "critical",
+              "type": "string"
+            },
+            {
+              "id": "b1ccc00e-b0da-45b8-b5e1-300453dfa59c",
+              "name": "alert_type",
+              "value": "emergency_red_flag",
+              "type": "string"
+            },
+            {
+              "id": "1b83a717-6c24-44ea-a0a4-237a55394eb9",
+              "name": "escalation_target",
+              "value": "emergency",
+              "type": "string"
+            },
+            {
+              "id": "4e8dd3ee-dbd1-4a9a-a909-3257ff1e0122",
+              "name": "message",
+              "value": "Emergency red-flag symptoms detected during post-visit check-in. Seek immediate urgent care attention.",
+              "type": "string"
+            },
+            {
+              "id": "593eab16-d7a7-467c-bed3-5096b0b5a7d2",
+              "name": "checkin_id",
+              "value": "={{$json.checkin_id}}",
+              "type": "string"
+            },
+            {
+              "id": "ed71e09e-00d0-4591-8463-150c6c2819c2",
+              "name": "patient_id",
+              "value": "={{$json.patient_id}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1040,
+        96
+      ],
+      "id": "2375c388-f411-4c7a-9cd3-7b704022740c",
+      "name": "Build Emergency Escalation"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "281e6aba-0ecb-45ba-9c2e-a0eca21baa46",
+              "leftValue": "={{\n(() => {\n  const text = String($json.symptom_text || '').toLowerCase();\n  const temp = Number($json.temperature_c || 0);\n\n  const hasBleeding =\n    text.includes(\"bleeding\") ||\n    text.includes(\"blood loss\") ||\n    text.includes(\"bleed\");\n\n  const hasMedicationReaction =\n    text.includes(\"rash\") ||\n    text.includes(\"side effect\") ||\n    text.includes(\"allergic reaction\") ||\n    text.includes(\"reaction to medication\") ||\n    text.includes(\"dizziness after medication\");\n\n  const hasWorseningPain =\n    text.includes(\"pain is worse\") ||\n    text.includes(\"worsening pain\") ||\n    text.includes(\"getting more painful\") ||\n    text.includes(\"more pain than yesterday\");\n\n  const hasHighFever =\n    temp > 38.5 ||\n    text.includes(\"39\") ||\n    text.includes(\"39.5\") ||\n    text.includes(\"high fever\");\n\n  return hasBleeding || hasMedicationReaction || hasWorseningPain || hasHighFever;\n})()\n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1024,
+        304
+      ],
+      "id": "2dbe2b95-d897-4411-8d91-a833d6d74c30",
+      "name": "Check Clinical Red Flags"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5f7b6e07-75aa-48d1-8846-e5549e2308b9",
+              "name": "status",
+              "value": "escalated",
+              "type": "string"
+            },
+            {
+              "id": "5472c9b5-0bc9-4532-ac51-80ade8e39c21",
+              "name": "risk_level",
+              "value": "high",
+              "type": "string"
+            },
+            {
+              "id": "f51eb742-d53c-44c2-9038-084fe872734f",
+              "name": "alert_type",
+              "value": "clinical_red_flag",
+              "type": "string"
+            },
+            {
+              "id": "4cd8ca1b-054e-4bcf-88a8-2ae3e50bc267",
+              "name": "escalation_target",
+              "value": "clinical_team",
+              "type": "string"
+            },
+            {
+              "id": "1f399f7a-8eb3-4e13-9e90-78542f36b6a7",
+              "name": "message",
+              "value": "Clinical red-flag symptoms detected during post-visit check-in.",
+              "type": "string"
+            },
+            {
+              "id": "e1b0f8e7-b5e9-416c-b1fc-85eca9b7f84c",
+              "name": "checkin_id",
+              "value": "={{$json.checkin_id}}",
+              "type": "string"
+            },
+            {
+              "id": "eebf8456-235d-44e1-9c25-1e4fb81c563e",
+              "name": "patient_id",
+              "value": "={{$json.patient_id}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1232,
+        208
+      ],
+      "id": "69a887c3-5c4c-480d-9577-0f079d464087",
+      "name": "Build Clinical Red Flag Escalation"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1520,
+        48
+      ],
+      "id": "db87fdb7-54f6-4df7-8191-b05d932b35ec",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Post-Visit Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Post-Visit Request": {
+      "main": [
+        [
+          {
+            "node": "Check Missing Required Check-In Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Missing Required Check-In Fields": {
+      "main": [
+        [
+          {
+            "node": "Build Missing Check-In Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check High Pain Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check High Pain Score": {
+      "main": [
+        [
+          {
+            "node": "Build High Pain Escalation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Emergency Red Flags",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Emergency Red Flags": {
+      "main": [
+        [
+          {
+            "node": "Build Emergency Escalation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Clinical Red Flags",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Clinical Red Flags": {
+      "main": [
+        [
+          {
+            "node": "Build Clinical Red Flag Escalation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Normal Recovery Logged",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Normal Recovery Logged": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Clinical Red Flag Escalation": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Emergency Escalation": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build High Pain Escalation": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Missing Check-In Error": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "7fbc29d4-6f94-4565-ac77-9e038eead69e",
+  "meta": {
+    "instanceId": "c89ff2040bd44e47c0b8b87e30d8789dd04832e62528d6e0abbfb2d5db95a336"
+  },
+  "id": "RRqe6tWhwj3I8iJ5",
+  "tags": []
+}

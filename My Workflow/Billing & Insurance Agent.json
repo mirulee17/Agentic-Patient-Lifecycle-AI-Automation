@@ -1,0 +1,1034 @@
+{
+  "name": "Billing & Insurance Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "billing-claim",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "f87e7d94-f32b-4e13-a15f-36673581d134",
+      "name": "Webhook",
+      "webhookId": "ea641f43-da1a-4e1d-8ec4-f73fc8e67dd9"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "eb6e4ed0-51e4-455c-a28f-b0b92ac1e56b",
+              "name": "claim_id",
+              "value": "={{$json[\"body\"][\"claim_id\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "cf06d5cc-6432-40ea-abee-8d8c82b0bf8c",
+              "name": "submitted_at",
+              "value": "={{$json[\"body\"][\"submitted_at\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "4e1e5248-d56f-48bb-94ad-31193497c991",
+              "name": "patient_id",
+              "value": "={{$json[\"body\"][\"patient\"][\"patient_id\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "546149c3-5bcd-4d33-8466-4c6117cf28cd",
+              "name": "invoice_id",
+              "value": "={{$json[\"body\"][\"invoice\"][\"invoice_id\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "2b5d8ebc-9075-47ab-9990-d4e847e00ec2",
+              "name": "policy_number",
+              "value": "={{$json[\"body\"][\"insurance\"][\"policy_number\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "7132efbf-deef-493b-bfc1-2a9f26b80fae",
+              "name": "policy_expiry",
+              "value": "={{$json[\"body\"][\"insurance\"][\"policy_expiry\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "eb4cf119-1c34-4737-9e91-623220ac0eef",
+              "name": "treatment_code",
+              "value": "={{$json[\"body\"][\"claim\"][\"treatment_code\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "2ed097db-d9ea-420c-8138-0ed36d2afe8f",
+              "name": "coverage_plan",
+              "value": "={{$json[\"body\"][\"claim\"][\"coverage_plan\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "61de410f-fe1c-4c1d-b90b-104b38308c1b",
+              "name": "claim_amount",
+              "value": "={{$json[\"body\"][\"claim\"][\"claim_amount\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "ce1b24fd-c4b7-47bd-b1b7-ba0eb5b94740",
+              "name": "required_documents",
+              "value": "={{$json[\"body\"][\"claim\"][\"required_documents\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "27b06e53-d5ac-4393-a148-3e31ba1a5a22",
+              "name": "submitted_documents",
+              "value": "={{$json[\"body\"][\"claim\"][\"submitted_documents\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "2f23fb07-f8ef-4509-a053-75908d3c176f",
+              "name": "manual_override",
+              "value": "={{$json[\"body\"][\"claim\"][\"manual_override\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "de446bdf-a564-4a8a-b724-172559598209",
+              "name": "override_reason",
+              "value": "={{$json[\"body\"][\"claim\"][\"override_reason\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "af3109b3-bd3d-4861-86ce-2a92ae9c0433",
+              "name": "claim_status",
+              "value": "={{$json[\"body\"][\"claim\"][\"claim_status\"]}}",
+              "type": "string"
+            },
+            {
+              "id": "6f5dce1f-44c0-4fec-a238-39bcc0a5019d",
+              "name": "days_outstanding",
+              "value": "={{$json[\"body\"][\"claim\"][\"days_outstanding\"]}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "11f476ee-ae23-4576-9e30-11fb21d99ffc",
+      "name": "Normalize Billing Request"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e75fbd71-0d43-4ff8-82ef-6c970dcd81d7",
+              "leftValue": "={{\n!$json.claim_id ||\n!$json.patient_id ||\n!$json.invoice_id ||\n!$json.policy_number ||\n!$json.policy_expiry ||\n!$json.treatment_code ||\n!$json.coverage_plan ||\n!$json.claim_amount\n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        352,
+        -16
+      ],
+      "id": "edb80905-4861-4cac-b22c-ef6a6d464b61",
+      "name": "Check Missing Required Billing Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "23373b41-4c8b-49b8-8377-79e7c5f7b764",
+              "name": "status",
+              "value": "incomplete",
+              "type": "string"
+            },
+            {
+              "id": "383521a3-b4d5-4c8e-9f33-6ffb35de37cf",
+              "name": "error_type",
+              "value": "missing_required_billing_fields",
+              "type": "string"
+            },
+            {
+              "id": "17d7196b-7870-4673-bbe4-b5283bba8c09",
+              "name": "message",
+              "value": "Missing required billing or claim information.",
+              "type": "string"
+            },
+            {
+              "id": "87cee315-ff39-42c7-95ed-8507ed29a4bb",
+              "name": "claim_id",
+              "value": "={{$json.claim_id}}",
+              "type": "string"
+            },
+            {
+              "id": "7f18afd3-2b30-48ae-8c5c-7f7e103cea04",
+              "name": "invoice_id",
+              "value": "={{$json.invoice_id}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        560,
+        -112
+      ],
+      "id": "f28ba625-abf4-4e27-9780-2a96f9a395b4",
+      "name": "Build Missing Billing Fields Error"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "869bc64e-2ab8-4277-8d55-813695e48d8b",
+              "leftValue": "={{\nString($json.invoice_id || '').toUpperCase().includes('DUP') ||\nString($json.claim_status || '').toLowerCase() === 'submitted'\n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        560,
+        80
+      ],
+      "id": "dd7f905d-f430-43c5-b5f0-0428e2841126",
+      "name": "Check Duplicate Invoice"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f815b048-515b-453c-97c5-1f55c8e15622",
+              "name": "status",
+              "value": "blocked",
+              "type": "string"
+            },
+            {
+              "id": "0b016c67-c774-4d55-929d-ca1d8f092f73",
+              "name": "error_type",
+              "value": "duplicate_invoice_detected",
+              "type": "string"
+            },
+            {
+              "id": "d74e49b2-972d-4588-ab43-3fbbd3bb948e",
+              "name": "message",
+              "value": "Potential duplicate invoice or already submitted claim detected.",
+              "type": "string"
+            },
+            {
+              "id": "6bd5aae7-c049-45e8-8812-b5ae33d8b021",
+              "name": "claim_id",
+              "value": "={{$json.claim_id}}",
+              "type": "string"
+            },
+            {
+              "id": "b1754712-818f-406d-90f8-e20a0f4b7f3f",
+              "name": "invoice_id",
+              "value": "={{$json.invoice_id}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        768,
+        -16
+      ],
+      "id": "eb63cf0b-c9f0-4630-b28b-c78817f51e55",
+      "name": "Build Duplicate Invoice Error"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "59fffe4b-3773-4f13-ba83-a60793fd5a39",
+              "leftValue": "={{\n(() => {\n  const expiry = $json.policy_expiry;\n  if (!expiry) return true;\n  const today = new Date();\n  const exp = new Date(expiry + 'T23:59:59');\n  return exp < today;\n})()\n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        768,
+        176
+      ],
+      "id": "2a9fce7f-d70d-49a5-9dd3-3a396523e7f3",
+      "name": "Check Insurance Expiry"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f350c5d4-ae86-4525-9ba2-dc37b841ee4b",
+              "name": "status",
+              "value": "rejected",
+              "type": "string"
+            },
+            {
+              "id": "1ec895e3-87b6-4f74-9aa3-680d52d9d045",
+              "name": "error_type",
+              "value": "expired_insurance_policy",
+              "type": "string"
+            },
+            {
+              "id": "a5c29f28-3f4a-45fd-8fc5-1dcf2d96681b",
+              "name": "message",
+              "value": "Insurance policy is expired at time of claim.",
+              "type": "string"
+            },
+            {
+              "id": "974b564c-2c49-4c4b-957b-3a6e5ff5eddb",
+              "name": "claim_id",
+              "value": "={{$json.claim_id}}",
+              "type": "string"
+            },
+            {
+              "id": "f8e3e515-1ec7-4de8-bafa-65f453eb6076",
+              "name": "invoice_id",
+              "value": "={{$json.invoice_id}}",
+              "type": "string"
+            },
+            {
+              "id": "0c1ee5e3-56b8-4b5f-9574-92f227ccb219",
+              "name": "policy_number",
+              "value": "={{$json.policy_number}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        976,
+        80
+      ],
+      "id": "daaaf60f-f722-447d-b4ca-9004f3fd33f3",
+      "name": "Build Expired Insurance Error"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "09944ed4-cf47-4eec-a422-bb5cc4c7c9f7",
+              "leftValue": "={{\n(() => {\n  const required = Array.isArray($json.required_documents)\n    ? $json.required_documents\n    : String($json.required_documents || '').split(',').map(x => x.trim()).filter(Boolean);\n\n  const submitted = Array.isArray($json.submitted_documents)\n    ? $json.submitted_documents\n    : String($json.submitted_documents || '').split(',').map(x => x.trim()).filter(Boolean);\n\n  return required.length === 0 || submitted.length === 0 || submitted.length < required.length;\n})()\n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        976,
+        272
+      ],
+      "id": "0ca6682a-92ac-4b25-9a79-b4b433b7559b",
+      "name": "Check Missing Documents"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2d093ae2-60be-4442-b345-3794fe6119b0",
+              "name": "status",
+              "value": "pending_documents",
+              "type": "string"
+            },
+            {
+              "id": "80443780-92a0-4184-89c3-3774d531eac7",
+              "name": "error_type",
+              "value": "missing_claim_documents",
+              "type": "string"
+            },
+            {
+              "id": "6d901418-5df9-4955-b9a1-0bce2b82fc95",
+              "name": "message",
+              "value": "Required supporting claim documents are missing.",
+              "type": "string"
+            },
+            {
+              "id": "1fc3a025-7a38-40a2-89b5-5cff9fffec46",
+              "name": "claim_id",
+              "value": "={{$json.claim_id}}",
+              "type": "string"
+            },
+            {
+              "id": "1c3ed6c5-0df7-4650-9d27-71564e519936",
+              "name": "invoice_id",
+              "value": "={{$json.invoice_id}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1184,
+        176
+      ],
+      "id": "c0c5d3c6-0e74-40fa-ae4f-e40cb7adb735",
+      "name": "Build Missing Documents Error"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3132d769-0a63-4af8-97bb-08b4d23a67a2",
+              "leftValue": "={{\n(() => {\n  const plan = String($json.coverage_plan || '').toUpperCase();\n  const code = String($json.treatment_code || '').toUpperCase();\n\n  const allowedByPlan = {\n    BASIC: ['TC001', 'TC002'],\n    PREMIUM: ['TC001', 'TC002', 'TC003', 'TC004']\n  };\n\n  const allowed = allowedByPlan[plan] || [];\n  return !allowed.includes(code);\n})()\n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1184,
+        368
+      ],
+      "id": "f864ca8f-b65e-403e-a0c8-ba0a53e8b24e",
+      "name": "Check Coverage Mismatch"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5d3e46b0-b1c5-442f-b8e3-bddc0045092e",
+              "name": "status",
+              "value": "rejected",
+              "type": "string"
+            },
+            {
+              "id": "a75c8af3-3958-4a16-aac5-e58e4dc782ec",
+              "name": "error_type",
+              "value": "treatment_not_covered",
+              "type": "string"
+            },
+            {
+              "id": "3c60c745-b017-413b-876e-81366f2432a1",
+              "name": "message",
+              "value": "Treatment code is not covered under the current insurance plan.",
+              "type": "string"
+            },
+            {
+              "id": "306f91a6-eb55-43d0-92e8-552dd1bb5e68",
+              "name": "claim_id",
+              "value": "={{$json.claim_id}}",
+              "type": "string"
+            },
+            {
+              "id": "107f762b-00e9-4a3b-97aa-cd2304d63e9a",
+              "name": "invoice_id",
+              "value": "={{$json.invoice_id}}",
+              "type": "string"
+            },
+            {
+              "id": "0f0bd4e6-0f92-49e3-a3b9-363fe9c60a06",
+              "name": "coverage_plan",
+              "value": "={{$json.coverage_plan}}",
+              "type": "string"
+            },
+            {
+              "id": "ca7588dd-54f9-4fc1-b9eb-fa18e3b0e5f7",
+              "name": "treatment_code",
+              "value": "={{$json.treatment_code}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1392,
+        272
+      ],
+      "id": "07e371a3-7e88-4d4a-a5af-f7b82f4f1b3f",
+      "name": "Build Coverage Mismatch Error"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4ebcb8ee-b260-455c-911a-a1c76c803c07",
+              "leftValue": "={{\n(() => {\n  const override = String($json.manual_override || '').toLowerCase() === 'true';\n  const reason = String($json.override_reason || '').trim();\n  return override && !reason;\n})()\n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1392,
+        464
+      ],
+      "id": "22485457-7bbf-4cd8-8537-c0ac47d311c6",
+      "name": "Check Manual Override Justification"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ea249b3e-430d-4317-a5fd-e2294856d92d",
+              "name": "status",
+              "value": "blocked",
+              "type": "string"
+            },
+            {
+              "id": "f8e81381-7db0-4af9-83f7-d7545ff97960",
+              "name": "error_type",
+              "value": "missing_override_justification",
+              "type": "string"
+            },
+            {
+              "id": "e562dc75-9774-4bac-bfd5-7363e429ad8e",
+              "name": "message",
+              "value": "Manual override requires documented justification.",
+              "type": "string"
+            },
+            {
+              "id": "76e13692-577e-401e-be05-d733bcdffe86",
+              "name": "claim_id",
+              "value": "={{$json.claim_id}}",
+              "type": "string"
+            },
+            {
+              "id": "6b88ba99-d058-4e81-9751-6ce2e7b71946",
+              "name": "invoice_id",
+              "value": "={{$json.invoice_id}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1600,
+        368
+      ],
+      "id": "6874ff78-00e4-452b-95e8-d321b41bd58d",
+      "name": "Build Override Justification Error"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "98768ab0-716e-436a-9209-88a1253112eb",
+              "leftValue": "={{\n(() => {\n  const status = String($json.claim_status || '').toLowerCase();\n  const days = Number($json.days_outstanding || 0);\n  return (status === 'open' || status === 'pending') && days > 30;\n})()\n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1600,
+        560
+      ],
+      "id": "e55c02be-7dfe-4262-b05a-96348091b06e",
+      "name": "Check Claim SLA Breach"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2d293252-638e-48dc-8ea9-233f81f6e040",
+              "name": "status",
+              "value": "escalated",
+              "type": "string"
+            },
+            {
+              "id": "de3f811a-6114-43f8-96e6-39d828a5a63e",
+              "name": "risk_level",
+              "value": "high",
+              "type": "string"
+            },
+            {
+              "id": "b6f5aed9-ad8b-49ba-801d-52ff338858cc",
+              "name": "alert_type",
+              "value": "claim_sla_breach",
+              "type": "string"
+            },
+            {
+              "id": "fb3f4a26-31c3-4cf1-9144-26ac3a905fbe",
+              "name": "escalation_target",
+              "value": "billing_manager",
+              "type": "string"
+            },
+            {
+              "id": "2577b3a7-7fdc-4602-a2d9-185d8a780418",
+              "name": "message",
+              "value": "Claim unresolved beyond SLA threshold.",
+              "type": "string"
+            },
+            {
+              "id": "650c7919-4bd0-451b-ab15-29edd102ca25",
+              "name": "claim_id",
+              "value": "={{$json.claim_id}}",
+              "type": "string"
+            },
+            {
+              "id": "0344f228-5748-435a-9603-0fdcffdbf01b",
+              "name": "invoice_id",
+              "value": "={{$json.invoice_id}}",
+              "type": "string"
+            },
+            {
+              "id": "30e69359-351b-4a91-bf15-8ad129348b04",
+              "name": "days_outstanding",
+              "value": "={{$json.days_outstanding}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1808,
+        464
+      ],
+      "id": "60d64d73-a9b4-4d89-b8ab-4ee7f9534837",
+      "name": "Build Claim SLA Escalation"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c78609f1-a0b9-44ab-ad03-34e382fd17d7",
+              "name": "status",
+              "value": "accepted",
+              "type": "string"
+            },
+            {
+              "id": "1ed81037-b623-49a1-9f37-58dbf6e0a83e",
+              "name": "risk_level",
+              "value": "low",
+              "type": "string"
+            },
+            {
+              "id": "c43f2982-4a11-401f-ac0b-26303cf329ad",
+              "name": "message",
+              "value": "Claim passed billing validation checks.",
+              "type": "string"
+            },
+            {
+              "id": "0a369d40-450e-42d1-a7b7-efac34fa602e",
+              "name": "claim_id",
+              "value": "={{$json.claim_id}}",
+              "type": "string"
+            },
+            {
+              "id": "5fe73557-c316-4d59-85c9-a16c93337de7",
+              "name": "invoice_id",
+              "value": "={{$json.invoice_id}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1808,
+        656
+      ],
+      "id": "b61b6b73-5af1-4b82-a797-991a02d69d47",
+      "name": "Build Claim Accepted"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2016,
+        112
+      ],
+      "id": "f100c5c4-30bd-45b6-9e98-feb67d245b35",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Billing Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Billing Request": {
+      "main": [
+        [
+          {
+            "node": "Check Missing Required Billing Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Missing Required Billing Fields": {
+      "main": [
+        [
+          {
+            "node": "Build Missing Billing Fields Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Duplicate Invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Duplicate Invoice": {
+      "main": [
+        [
+          {
+            "node": "Build Duplicate Invoice Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Insurance Expiry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Insurance Expiry": {
+      "main": [
+        [
+          {
+            "node": "Build Expired Insurance Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Missing Documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Missing Documents": {
+      "main": [
+        [
+          {
+            "node": "Build Missing Documents Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Coverage Mismatch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Coverage Mismatch": {
+      "main": [
+        [
+          {
+            "node": "Build Coverage Mismatch Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Manual Override Justification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Manual Override Justification": {
+      "main": [
+        [
+          {
+            "node": "Build Override Justification Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Claim SLA Breach",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Claim SLA Breach": {
+      "main": [
+        [
+          {
+            "node": "Build Claim SLA Escalation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Claim Accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Claim SLA Escalation": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Override Justification Error": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Claim Accepted": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Coverage Mismatch Error": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Missing Documents Error": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Expired Insurance Error": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Duplicate Invoice Error": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "42bb558b-cd77-4713-9625-7e2622e0cff4",
+  "meta": {
+    "instanceId": "c89ff2040bd44e47c0b8b87e30d8789dd04832e62528d6e0abbfb2d5db95a336"
+  },
+  "id": "VxiK72rnHZsotOTI",
+  "tags": []
+}

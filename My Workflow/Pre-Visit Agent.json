@@ -1,0 +1,667 @@
+{
+  "name": "Pre-Visit Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "previsit-intake",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "825dc954-dd36-4600-9dbc-a342387be15f",
+      "name": "Webhook",
+      "webhookId": "216f22f6-ebed-4e14-8807-9feeda50b923"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3ed51ff5-5946-416f-b954-9c667c21e191",
+              "name": "submission_id",
+              "value": "={{$json[\"body\"][\"submission_id\"] || \"\"}}",
+              "type": "string"
+            },
+            {
+              "id": "b549b1bd-095a-49a1-8eb3-acc5c530f824",
+              "name": "submitted_at",
+              "value": "={{$json[\"body\"][\"submitted_at\"] || \"\"}}",
+              "type": "string"
+            },
+            {
+              "id": "dd8f2b42-e39c-4265-80ce-be5fe41759ad",
+              "name": "patient_id",
+              "value": "={{$json[\"body\"][\"patient\"][\"patient_id\"] || \"\"}}",
+              "type": "string"
+            },
+            {
+              "id": "4a1844e4-284d-4ed2-9670-815a65877066",
+              "name": "full_name",
+              "value": "={{$json[\"body\"][\"patient\"][\"full_name\"] || \"\"}}",
+              "type": "string"
+            },
+            {
+              "id": "8ac5d52a-5815-403b-b9a3-d3a3c0e29e42",
+              "name": "dob",
+              "value": "={{$json[\"body\"][\"patient\"][\"dob\"] || \"\"}}",
+              "type": "string"
+            },
+            {
+              "id": "71d0a5f9-0a38-4864-beb1-037fb98b65bf",
+              "name": "gender",
+              "value": "={{$json[\"body\"][\"patient\"][\"gender\"] || \"\"}}",
+              "type": "string"
+            },
+            {
+              "id": "eb71a654-0883-472a-8939-30c227669398",
+              "name": "phone",
+              "value": "={{$json[\"body\"][\"patient\"][\"phone\"] || \"\"}}",
+              "type": "string"
+            },
+            {
+              "id": "bad2c5ad-edad-4c55-b4ac-85b5876b3c19",
+              "name": "reason_for_visit",
+              "value": "={{$json[\"body\"][\"intake\"][\"reason_for_visit\"] || \"\"}}",
+              "type": "string"
+            },
+            {
+              "id": "7027318c-32c4-45f2-9568-e6b208a1cd00",
+              "name": "symptoms",
+              "value": "={{$json[\"body\"][\"intake\"][\"current_symptoms\"] || \"\"}}",
+              "type": "string"
+            },
+            {
+              "id": "3071cb6e-98f7-41a6-9498-9fd8ea2f97e9",
+              "name": "medical_history",
+              "value": "={{$json[\"body\"][\"intake\"][\"medical_history\"] || \"\"}}",
+              "type": "string"
+            },
+            {
+              "id": "98356732-859b-49cb-8f56-ece962997919",
+              "name": "insurance_policy_number",
+              "value": "={{$json[\"body\"][\"intake\"][\"insurance_policy_number\"] || \"\"}}",
+              "type": "string"
+            },
+            {
+              "id": "b1be5584-4986-4074-adf3-f823291ad6a4",
+              "name": "pregnancy_status",
+              "value": "={{$json[\"body\"][\"intake\"][\"pregnancy_status\"] || \"\"}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "37480498-bdd9-443f-b17e-9e0e0b9107cf",
+      "name": "Normalize Request"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c8bea6a9-8179-47dd-b223-1b1cd82fd52b",
+              "leftValue": "={{\n!$json.submission_id ||\n!$json.patient_id ||\n!$json.full_name ||\n!$json.dob ||\n!$json.gender ||\n!$json.phone ||\n!$json.reason_for_visit ||\n!$json.insurance_policy_number\n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "87b18f93-41d2-4ece-bfd0-bbb5526e8b64",
+      "name": "Check Missing Mandatory Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5648be32-807e-48f4-a2ab-eacbf4b0b711",
+              "name": "status",
+              "value": "incomplete",
+              "type": "string"
+            },
+            {
+              "id": "395d9c0f-6ab1-4aa4-a7e6-8ea0507d0b08",
+              "name": "error_type",
+              "value": "missing_mandatory_fields",
+              "type": "string"
+            },
+            {
+              "id": "c58671fb-0ebf-4fa2-a86d-e0db5b46ab82",
+              "name": "message",
+              "value": "Missing required intake information.",
+              "type": "string"
+            },
+            {
+              "id": "976bda6e-8f4f-4066-820f-4343768bf75e",
+              "name": "submission",
+              "value": "={{$json.submission_id}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        624,
+        -96
+      ],
+      "id": "7e4f840b-dd48-4762-80e1-a8b7b3cffa44",
+      "name": "Build Validation Error"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "69a4df5f-6954-49d6-a757-28198f5fcaa7",
+              "leftValue": "={{\n!/^[A-Z]{3}-\\d{8}$/.test($json.insurance_policy_number || '')\n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        624,
+        96
+      ],
+      "id": "eff25824-8956-408d-a3b0-eb9d8c803e07",
+      "name": "Check Insurance Format"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f5915bdb-7e59-4690-ad42-1383a30b213b",
+              "name": "status",
+              "value": "invalid",
+              "type": "string"
+            },
+            {
+              "id": "83dbf5e4-4d58-492e-83cb-25894f73b712",
+              "name": "error_type",
+              "value": "invalid_insurance_format",
+              "type": "string"
+            },
+            {
+              "id": "0b064f77-fc43-471d-b22f-b5c139b77849",
+              "name": "message",
+              "value": "Insurance policy number must follow format INS-12345678.",
+              "type": "string"
+            },
+            {
+              "id": "ff7f527c-0426-4128-97c9-9d4cc25b48f6",
+              "name": "insurance_policy_number",
+              "value": "={{$json.insurance_policy_number}}",
+              "type": "string"
+            },
+            {
+              "id": "6135df25-3d93-4113-9b3d-24fc4a252be7",
+              "name": "submission_id",
+              "value": "={{$json.submission_id}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        832,
+        0
+      ],
+      "id": "83375483-4500-4924-abc4-b1ada0bfc1ed",
+      "name": "Build Insurance Format Error"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "57429303-c814-49fb-88cd-3c2967d2201a",
+              "leftValue": "={{\n(() => {\n  const gender = ($json.gender || '').toLowerCase();\n  const dob = $json.dob;\n  const preg = $json.pregnancy_status;\n  if (!dob) return false;\n\n  const birth = new Date(dob);\n  const today = new Date();\n  let age = today.getFullYear() - birth.getFullYear();\n  const m = today.getMonth() - birth.getMonth();\n  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;\n\n  return gender === 'female' && age >= 15 && age <= 55 && (preg === null || preg === '' || preg === undefined);\n})()\n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        832,
+        192
+      ],
+      "id": "c021ddbc-7eb4-4954-9e27-3e95f6f38e4c",
+      "name": "Check Pregnancy Question Requirement"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9c1c6122-469a-40d2-a5ff-484f435be96d",
+              "name": "status",
+              "value": "needs_follow_up",
+              "type": "string"
+            },
+            {
+              "id": "d4d5ca80-a5a9-4f78-884f-2e5e40f4e9ba",
+              "name": "error_type",
+              "value": "missing_conditional_field",
+              "type": "string"
+            },
+            {
+              "id": "68020051-3ffa-4e5e-87b8-d11bc207ba4c",
+              "name": "message",
+              "value": "Pregnancy status is required for female patients aged 15 to 55.",
+              "type": "string"
+            },
+            {
+              "id": "d6aa1fad-fa4d-4c10-a504-6e5282b07519",
+              "name": "required_field",
+              "value": "pregnancy_status",
+              "type": "string"
+            },
+            {
+              "id": "fde1366a-d416-4095-af49-d2baa1939b96",
+              "name": "submission_id",
+              "value": "={{$json.submission_id}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1040,
+        96
+      ],
+      "id": "1c7c5885-4a6c-4b11-9ce5-51da07ece64d",
+      "name": "Build Pregnancy Follow-Up"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "90bc583b-3083-4df6-b196-9dc5b65ecdd3",
+              "leftValue": "={{\n(() => {\n  const toArray = (value) => {\n    if (Array.isArray(value)) return value;\n    if (typeof value === 'string') {\n      try {\n        const parsed = JSON.parse(value);\n        if (Array.isArray(parsed)) return parsed;\n      } catch (e) {}\n      return [value];\n    }\n    if (value == null) return [];\n    return [String(value)];\n  };\n\n  const symptoms = toArray($json.symptoms).map(s => String(s).toLowerCase());\n  const history = toArray($json.medical_history).map(h => String(h).toLowerCase());\n\n  const hasChestPain = symptoms.some(s => s.includes('chest pain'));\n  const hasHypertension = history.some(h => h.includes('hypertension'));\n\n  return hasChestPain && hasHypertension;\n})()\n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1040,
+        288
+      ],
+      "id": "94f4b5b7-8eb1-4ede-9f02-da970bf960d8",
+      "name": "Check High Risk Intake"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "388771d7-c73c-468e-b61d-11c2640038cb",
+              "name": "status",
+              "value": "escalated",
+              "type": "string"
+            },
+            {
+              "id": "e5b23b47-cc79-4857-9471-1b621ac0cfbc",
+              "name": "risk_level",
+              "value": "high",
+              "type": "string"
+            },
+            {
+              "id": "3c2b2614-05c9-4402-abc2-f670b9a434bc",
+              "name": "alert_type",
+              "value": "high_risk_intake",
+              "type": "string"
+            },
+            {
+              "id": "d1463aed-a2a8-46ee-8fdf-767d2ec4d641",
+              "name": "escalation_target",
+              "value": "nurse_queue",
+              "type": "string"
+            },
+            {
+              "id": "e5a5984d-eb76-446c-b3e6-e75baf2de176",
+              "name": "message",
+              "value": "High-risk intake detected based on medical history and symptoms.",
+              "type": "string"
+            },
+            {
+              "id": "dfbca5d7-717a-4d3d-981c-953f7965c5b3",
+              "name": "submission_id",
+              "value": "={{$json.submission_id}}",
+              "type": "string"
+            },
+            {
+              "id": "5fa5ec12-0ead-43f9-bdb4-b3ce97ec82b6",
+              "name": "patient_id",
+              "value": "={{$json.patient_id}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1248,
+        192
+      ],
+      "id": "4cfd7ece-caee-4afd-aa60-10e0d18a87ec",
+      "name": "Build Nurse Escalation"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fcc84765-f897-4f0e-aac1-6de60dbef03d",
+              "name": "status",
+              "value": "accepted",
+              "type": "string"
+            },
+            {
+              "id": "a847d2b5-e614-4a14-8cab-b98b6bea6c9a",
+              "name": "risk_level",
+              "value": "low",
+              "type": "string"
+            },
+            {
+              "id": "512ed98b-6e93-4058-a232-ba1c495519d4",
+              "name": "message",
+              "value": "Intake accepted and ready for scheduling.",
+              "type": "string"
+            },
+            {
+              "id": "fd0d8352-9ddb-4b8e-b75f-008e078a0e34",
+              "name": "submission_id",
+              "value": "={{$json.submission_id}}",
+              "type": "string"
+            },
+            {
+              "id": "b23ca0ef-c9b5-4bf6-ba9c-b6f8a30e7971",
+              "name": "patient_id",
+              "value": "={{$json.patient_id}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1248,
+        384
+      ],
+      "id": "cffe9369-ade9-4a3a-9ab2-af68ba6bdef4",
+      "name": "Build Intake Accepted"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1440,
+        32
+      ],
+      "id": "d7ffcecb-349a-464f-aaa4-9227f16674a7",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Request": {
+      "main": [
+        [
+          {
+            "node": "Check Missing Mandatory Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Missing Mandatory Fields": {
+      "main": [
+        [
+          {
+            "node": "Build Validation Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Insurance Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Insurance Format": {
+      "main": [
+        [
+          {
+            "node": "Build Insurance Format Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Pregnancy Question Requirement",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Pregnancy Question Requirement": {
+      "main": [
+        [
+          {
+            "node": "Build Pregnancy Follow-Up",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check High Risk Intake",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check High Risk Intake": {
+      "main": [
+        [
+          {
+            "node": "Build Nurse Escalation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Intake Accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Intake Accepted": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Nurse Escalation": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Pregnancy Follow-Up": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Insurance Format Error": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Validation Error": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "2448810f-11cf-453a-8069-4f0d2bcb0e23",
+  "meta": {
+    "instanceId": "c89ff2040bd44e47c0b8b87e30d8789dd04832e62528d6e0abbfb2d5db95a336"
+  },
+  "id": "kim7fk8CME3vPooQ",
+  "tags": []
+}

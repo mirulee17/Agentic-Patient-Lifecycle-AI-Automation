@@ -1,0 +1,362 @@
+{
+  "name": "Clinical Triage Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "patient-message",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ef965a86-49d9-4022-8ef2-c5249c96dc55",
+      "name": "Webhook",
+      "webhookId": "2a7585ac-ff7b-40e7-9438-affe5a39fe59"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4329fc45-ecbd-4df0-9bf0-c358a9c0251e",
+              "leftValue": "={{$json.body.message.toLowerCase()}}",
+              "rightValue": "chest pain",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "1076704a-58de-43cb-8e4b-30dced8aaa6a",
+              "leftValue": "={{$json.body.message.toLowerCase()}}",
+              "rightValue": "can't breathe",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "c5dd49aa-2d10-416a-b7b7-7e18ed6ad8c5",
+              "leftValue": "={{$json.body.message.toLowerCase()}}",
+              "rightValue": "heart attack",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "3945030d-60be-4fcf-817d-4184abfeb460",
+      "name": "Check Emergency Keywords"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5345e2b5-b316-457d-99a7-bb6383e5de68",
+              "name": "status",
+              "value": "EMERGENCY",
+              "type": "string"
+            },
+            {
+              "id": "e60acc0d-96c2-497b-b48b-a5c3e5af9e11",
+              "name": "instruction",
+              "value": "Possible emergency detected. Please call emergency services or visit the nearest hospital immediately.",
+              "type": "string"
+            },
+            {
+              "id": "50fa96d5-a7bb-48c9-bd93-efe9b7f257c7",
+              "name": "priority",
+              "value": "CRITICAL",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        416,
+        -80
+      ],
+      "id": "a989d90c-8609-40d8-9009-83bfe2dfc145",
+      "name": "Emergency Escalation"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1360,
+        160
+      ],
+      "id": "251bb562-f67b-4504-aa7f-43823513e87e",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "776823c5-e68e-429e-b2ad-b01ebd6400a7",
+              "name": "status",
+              "value": "TRIAGE",
+              "type": "string"
+            },
+            {
+              "id": "e98a6108-5f46-4ec3-bb5a-9aa8aab1ec50",
+              "name": "urgency",
+              "value": "Routine",
+              "type": "string"
+            },
+            {
+              "id": "e33e2015-02b2-4e80-b46e-6e122553e63c",
+              "name": "message",
+              "value": "Your symptoms do not appear to be an emergency. Please schedule a routine appointment if the issue continues.",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        416,
+        96
+      ],
+      "id": "ca36eabf-fa96-45bd-b4fa-3d1f7396b5b5",
+      "name": "Triage Classifications"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a clinical triage assistant. Based only on the patient's symptom message, classify the case into exactly one of these urgency levels: ROUTINE, SAME_DAY, or URGENT.\n\nRules:\n- ROUTINE = mild, non-urgent symptoms\n- SAME_DAY = symptoms that should be reviewed today but do not appear immediately life-threatening\n- URGENT = concerning symptoms needing urgent medical attention, but not already flagged as emergency by the rule-based check\n\nReturn only valid JSON in this exact format:\n{\n  \"urgency\": \"ROUTINE\",\n  \"reason\": \"short reason\"\n}\n\nPatient message:\n{{$json[\"body\"][\"message\"]}}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        592,
+        224
+      ],
+      "id": "2c0f7f13-f21c-4740-9160-5db0e6e45826",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "PdEBz8arIHP8qNl8",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9ea7d489-2fbc-4ed8-9bf1-2f1ef343ddd9",
+              "name": "ai_raw_text",
+              "value": "={{$json[\"content\"][\"parts\"][0][\"text\"].replace(/```json/g, \"\").replace(/```/g, \"\").trim()}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        944,
+        224
+      ],
+      "id": "823bedd1-4ec2-4ce2-84d3-5aaebd4d4e59",
+      "name": "Format Gemini Output"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "eb4af2b4-6ad4-451e-a827-5c661883b5ac",
+              "name": "status",
+              "value": "TRIAGE",
+              "type": "string"
+            },
+            {
+              "id": "ef6fe63f-4a35-4879-869b-4cc0eb250580",
+              "name": "urgency",
+              "value": "={{ JSON.parse($json[\"ai_raw_text\"]).urgency }}",
+              "type": "string"
+            },
+            {
+              "id": "7e0b1a3d-4665-4dbd-a43a-8e86df64a1b3",
+              "name": "reason",
+              "value": "={{ JSON.parse($json[\"ai_raw_text\"]).reason }}",
+              "type": "string"
+            },
+            {
+              "id": "756d979a-d8a6-401f-bf7f-a2a99573b17f",
+              "name": "guidance",
+              "value": "={{ \n  JSON.parse($json[\"ai_raw_text\"]).urgency === \"ROUTINE\"\n    ? \"Your symptoms do not appear to be an emergency. Please monitor them and book a routine appointment if they continue.\"\n    : JSON.parse($json[\"ai_raw_text\"]).urgency === \"SAME_DAY\"\n    ? \"Your symptoms should be reviewed today. Please contact the clinic for a same-day appointment.\"\n    : \"Your symptoms may need urgent medical attention. Please seek urgent medical review as soon as possible.\"\n}}",
+              "type": "string"
+            },
+            {
+              "id": "1c910621-3473-49a8-b426-67c1752237bd",
+              "name": "disclaimer",
+              "value": "This is not a diagnosis. If symptoms worsen or you feel unsafe, seek immediate medical attention.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1136,
+        224
+      ],
+      "id": "2a89f16e-93a3-4e0c-a598-b6e5c537e278",
+      "name": "Parse AI Result"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Check Emergency Keywords",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Emergency Keywords": {
+      "main": [
+        [
+          {
+            "node": "Emergency Escalation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Triage Classifications",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Emergency Escalation": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Triage Classifications": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Format Gemini Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Gemini Output": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Result": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "83f5f8d1-a9f5-4574-9ac9-f8ccf8468652",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c89ff2040bd44e47c0b8b87e30d8789dd04832e62528d6e0abbfb2d5db95a336"
+  },
+  "id": "BHFVmPA6zLM2X2DT",
+  "tags": []
+}
